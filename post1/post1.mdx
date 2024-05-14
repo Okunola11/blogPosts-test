@@ -1,0 +1,44 @@
+---
+title: "Font Awesome Icons with NextJS"
+date: "2024-04-08"
+tags: ["next.js", "nextjs", "icons"]
+intro: "In visual communication, icons are simplified symbols conveying information. Understanding them is key in 'Font Awesome Icons with NextJS'."
+---
+
+We utilize **icons** as visual representations of information. They depict actions, brands, and much more. Additionally, they are visually appealing (especially when you opt for appealing ones 🤡).
+
+**Font Awesome** stands as the world's most popular **icon set** and **toolkit**. With over 30,199 icons spread across 68 categories in 9 styles (including brands), it offers a comprehensive library of icons for any project's needs.
+
+I chose it because I adore their icons in my portfolio project, which I crafted with `Next.js`. I was taken aback to find this oversized, frightening image in my project.
+
+<CustomImage
+  src="https://raw.githubusercontent.com/okunola11/blogPosts-test/main/post1/oversizedicon.png"
+  alt="ChatGPT provides the benefits of Static-Site Generation"
+/>
+
+I scoured the internet, conducting research on why I had a zombie-like icon appearing in my project. It turns out that due to the unique way **Next.js** handles **CSS**, the necessary CSS for the icons to function properly wasn't being applied, as outlined in the Font Awesome icons documentation for Next.js.
+
+**Solution:** Manually apply the required CSS to your project. It's as simple as that.
+
+## Getting it to work
+
+In your Next.js project, navigate to the `pages/_app.js` directory or create one if you do not have already. Modify it to include fontawesome css styles.
+
+```ts {highlight=1}
+import "@fortawesome/fontawesome-svg-core/styles.css";
+
+export default function MyApp({ Component, pageProps }) {
+  return <Component {...pageProps} />;
+}
+```
+
+Just like that, the CSS gets applied, and the icons appear all nice and welcoming as they should, not scary.
+
+<CustomImage
+  src="https://raw.githubusercontent.com/okunola11/blogPosts-test/main/post1/normalicon.png"
+  alt="ChatGPT provides the benefits of Static-Site Generation"
+/>
+
+#### Important to note
+
+If you don't already have `pages/_app.js` in your project tree, you don't necessarily need to add it just to apply the CSS. You can apply the CSS to any part where the icons are used in your project, and the CSS will be available globally.
