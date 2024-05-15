@@ -1,29 +1,55 @@
 ---
-title: "This is my New Article"
-date: "2024-04-14"
-tags: ["next.js", "nextjs", "new"]
-intro: "Static Generation is recommended whenever possible for faster load time"
+title: "JWT Access and Refresh Token"
+date: "2024-04-20"
+tags: ["jwt", "authentication", "token"]
+intro: "Unrestricted access to an organization's resources introduces limitless risks, potentially resulting in significant losses for the organization."
 ---
 
-We recommend using **Static Generation** (with and without data) whenever possible because your page can be built once and served by CDN, which makes it much faster than having a server render the page on every request.
+<CustomImage
+  src="https://raw.githubusercontent.com/okunola11/blogPosts-test/main/post3/post3.png"
+  alt="JSON Web Token"
+/>
 
-```ts
-const sum = (num1: number, num2: number): number => {
-  return num1 + num2;
-};
+The data and resources of an organization are its most important assets. Therefore, there is a need to secure them, locking them away and safeguarding the keys to the vaults where this data is stored. But wait! Before you toss away the key, remember that you'll need to access the data to use it. Typically, access (in the form of a key) is granted to employees of the organization.
 
-console.log(sum(4, 8)); //12
-```
+This is where **authentication** comes into play. **Authentication** typically involves users sending a login request to a backend API with a registered username and password. If the credentials are correct, users are granted access to the resources they need.
 
-You can use Static Generation for many types of pages, including:
+**For how long?**
 
-- Marketing pages
-- Blog posts
-- E-commerce product listings
-- Help and documentation
+Granting extended periods of access to resources poses a significant security risk for the organization.
 
-You should ask yourself: "Can I pre-render this page **ahead** of a user's request?" If the answer is yes, then you should choose Static Generation.
+- External parties may have acquired the login details of an employee.
+- Employees may negligently use public computers to access the organization's resources.
+- Hackers may have also obtained employee details.
 
-On the other hand, Static Generation is **not** a good idea if you cannot pre-render a page ahead of a user's request. Maybe your page shows frequently updated data, and the page content changes on every request.
+With these potential imminent threats, every moment of unauthorized access to resources poses a significant risk, potentially resulting in substantial financial implications and damage to the public image of the organization.
 
-In that case, you can use **Server-Side Rendering**. It will be slower, but the pre-rendered page will always be up-to-date. Or you can skip pre-rendering and use client-side JavaScript to populate data.
+**The Way Forward**
+This is where JWT (JSON Web Token) **access** and **refresh** tokens come into play. They are secure tokens used as an additional security layer to regulate users' access to resources.
+
+<CustomImage
+  src="https://raw.githubusercontent.com/okunola11/blogPosts-test/main/post3/jwt.png"
+  alt="Login request to an API with JWT"
+/>
+
+**Access Token**
+The access token is issued immediately upon authentication (when the user logs in with their username and password). As the name suggests, it allows access to resources for authenticated users. A valid access token grants access, while an invalid access token results in access being denied. This ensures that users must log in again upon the expiration of this token.
+
+Access tokens usually expire within a short period, typically **5 minutes** or less in production, and mere seconds for financial applications.
+
+**Refresh Token**
+We've discussed the access token, but except in financial or high-security risk applications, it would be a poor user experience if users had to log in every 5 minutes.
+This is where the refresh token shines. It is also issued upon authentication alongside the access token. A valid refresh token is used to obtain a new access token upon expiration of the current access token. This process ensures that users remain logged in as long as they have a valid refresh token.
+
+The refresh token has a longer expiration period than the access token, typically **7 days** or more depending on preference.
+
+**Are these tokens secure?**
+This is an intriguing question because while the aim of JWT tokens is to add an extra layer of security, depending on how they are utilized, they can still pose a serious security risk.
+
+- User data, company data, and any other sensitive information can be accessed if an access token is exposed.
+- An exposed refresh token guarantees almost unlimited access to hackers or external parties.
+
+**Best Practices**
+
+- Access tokens should never be stored in localStorage, as they can be easily retrieved from there. Instead, store them in JavaScript state.
+- Refresh tokens should be stored as **httpOnly** secure **cookies**, ensuring they can only be accessed over secured HTTP requests.
