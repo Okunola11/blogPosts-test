@@ -1,34 +1,98 @@
 ---
-title: "Stepping Up the Game"
-date: "2024-04-05"
-tags: ["next.js", "nextjs", "new"]
-intro: "Static Generation is recommended whenever possible for faster load time"
+title: "Retrieving the Most Frequently Occurring Values from a List of Any Data Types"
+date: "2024-04-19"
+tags: ["tags", "function"]
+intro: "Discover how to efficiently extract the most common elements from diverse datasets, regardless of data type using TypeScript. Learn practical methods now!"
 ---
 
-We recommend using **Static Generation** (with and without data) whenever possible because your page can be built once and served by CDN, which makes it much faster than having a server render the page on every request.
+While working on my blog project, I aimed to enhance user experience by facilitating easy navigation through content sharing common characteristics or topics. That's where **tags** play a crucial role; they are the perfect fit.
+
+Tags function similarly to how a family shares a surname to signify their shared bloodline or bond.
+
+As per ChatGPT, **tags** refer to keywords or labels assigned to digital content, including articles, blog posts, images, videos, or other media types, for the purpose of categorization and thematic organization.
+
+However, simply having tags wasn't sufficient. I aspired to display a trending list showcasing the most occurring tags across all posts. This aspiration led me to develop a dedicated function for the task. Moreover, I ensured this function's versatility by allowing it to accept any data types, thereby enabling its reuse for various purposes as needed.
 
 ```ts
-const sum = (num1: number, num2: number): number => {
-  return num1 + num2;
-};
+const getMostOccurringValues<T> = (arr: T[], count: number): T[] => {
+  const occurrences = {} as Record<string, number>;
 
-console.log(sum(4, 8)); //12
+  arr.forEach((value) => {
+    const key = JSON.stringify(value);
+    occurrences[key] = (occurrences[key] || 0) + 1;
+  });
+
+  const sortedValues = Object.keys(occurrences)
+    .sort((a, b) => occurrences[b] - occurrences[a])
+    .map((key) => JSON.parse(key) as T);
+
+  return sortedValues.slice(0, count);
+}
+
 ```
 
-You can use Static Generation for many types of pages, including:
+Several key operations are involved in this function.
 
-- Marketing pages
-- Blog posts
-- E-commerce product listings
-- Help and documentation
+The function is of generic type `T`, ensuring its compatibility with any data type. It accepts two parameters:
 
-You should ask yourself: "Can I pre-render this page **ahead** of a user's request?" If the answer is yes, then you should choose Static Generation.
+- `arr: T[]`: An array of generic type `T`.
+- `count`: A number determining the length of the list returned by the function.
+
+The operations of the function are elaborated below:
+
+- Occurrences Object: This object stores the count of each unique value in the array.
+- Counting Occurrences:
+  - Utilizing **forEach**, the function iterates through each value of the input array (`arr`).
+  - For each iterated value, the function converts it to a string using `JSON.stringify()` to create a key for the occurrences object.
+  - Subsequently, the function increments the count for that value in the occurrences object.
+  - At this stage, we have an occurrences object with unique stringified **values**, each representing a unique value from the input array (`arr: T[]`), and the corresponding **counts**, indicating the number of times that value exists in the array, serving as the **value** of the key.
+- Sorting Values by Occurrence:
+  - The function first extracts the keys from the occurrences object using `Object.keys()`.
+  - It then sorts these keys based on the occurrence count of each value in descending order using the `sort()` function.
+  - The `sort()` function employs a comparison function that subtracts the occurrence counts (`occurrences[b] - occurrences[a]`) to sort the keys accordingly.
+- Mapping and Slicing:
+
+  - Next, the function maps the sorted keys back to their original values using `JSON.parse()` and casts them back to type `T`, which represents the data type of the values before they were stringified.
+  - Finally, the function returns the top `count` values from the sorted array, based on the **count** parameter passed into the function.
+
+  **Usage**
+
+```TypeScript
+const randomArray = [
+    "Okunola",
+    2,
+    2,
+    "Okunola",
+    "Okunola",
+    2.3,
+    2.3,
+    "javaScript",
+    "javaScript",
+    "python",
+    "golang",
+    { dele: "aaa" },
+    { dele: "aaa" },
+    { dele: "aaa" },
+  ];
+
+// Using the defined function to get the most occuring values
+const topValues = getMostOccurringValues(randomArray, 3);
+```
+
+This provides a new list of the 3 most occuring values from `randomArray`
 
 <CustomImage
-  src="https://raw.githubusercontent.com/okunola11/blogPosts-test/main/another/another.png"
-  alt="Warning: Next Level Ahead"
+  src="https://raw.githubusercontent.com/okunola11/blogPosts-test/main/post2/post2.png"
+  alt="Rendered output of top occuring values"
 />
 
-On the other hand, Static Generation is **not** a good idea if you cannot pre-render a page ahead of a user's request. Maybe your page shows frequently updated data, and the page content changes on every request.
+> [!NOTE]
 
-In that case, you can use **Server-Side Rendering**. It will be slower, but the pre-rendered page will always be up-to-date. Or you can skip pre-rendering and use client-side JavaScript to populate data.
+```TypeScript
+{dele: "aaa"},
+// shows as
+[Object Object]
+//I had to stringify it as objects are not valied react children. The same object still gets returned by the function.
+```
+
+That concludes this post. Thank you for reading, and happy coding!
