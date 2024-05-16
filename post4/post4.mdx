@@ -1,13 +1,178 @@
 ---
-title: "Two Forms of Pre-rendering"
-date: "2024-03-27"
-tags: ["next.js", "nextjs"]
-intro: "Next.js has two forms of pre-rendering: Static Generation and Server-side Rendering"
+title: "JWT in Express.js"
+date: "2024-04-22"
+tags: ["jwt", "express.js"]
+intro: "Walk through implementing JWT in an Express.js project with me in this post"
 ---
 
-Next.js has two forms of pre-rendering: **Static Generation** and **Server-side Rendering**. The difference is in **when** it generates the HTML for a page.
+In my previous post, I discussed **JWTs**, exploring their significance, limitations, and best practices. This post will walk us through the process of implementing JWT tokens in an Express.js project.
 
-- **Static Generation** is the pre-rendering method that generates the HTML at **build time**. The pre-rendered HTML is then _reused_ on each request.
-- **Server-side Rendering** is the pre-rendering method that generates the HTML on **each request**.
+To follow along with this tutorial, it's assumed that you are already working on an API with Express.js and are interested in integrating JWT tokens into your authentication process.
 
-Importantly, Next.js lets you **choose** which pre-rendering form to use for each page. You can create a "hybrid" Next.js app by using Static Generation for most pages and using Server-side Rendering for others.
+Begin by installing the `jsonwebtoken` package from the Node Package Manager.
+
+```node
+#Run
+npm install jsonwebtoken
+```
+
+Create a `.env` file in your project's root folder. Inside, add a secret key for access and refresh tokens, as demonstrated below:
+
+```env
+ACCESS_TOKEN_SECRET=a_random_secret_value
+REFRESH_TOKEN_SECRET=a_random_secret_value
+```
+
+### Token Generation:
+
+This function should reside within your authentication endpoint. If you already have a function set up to handle user login, authenticating users with their passwords, simply integrate the remaining JWT processes into your project.
+
+```JavaScript
+const jwt = require("jsonwebtoken");
+
+const handleLogin = (req, res) => {
+    // Codes to authenticate users upon login request
+    // The authecticated user is referred to as "authenticatedUser" below
+
+    //Access Token Generation
+    const accessToken = jwt.sign(
+        {
+            "UserInfo": {
+            "username": authenticatedUser.username,
+            },
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "15m" }
+        );
+
+    // Refresh Token Generation
+    const refreshToken = jwt.sign(
+        { "username": authenticatedUser.username },
+        process.env.REFRESH_TOKEN_SECRET,
+        { expiresIn: "7d" }
+        );
+
+    // create a http only secure cookie to store the refreshToken
+        res.cookie("jwt", refreshToken, {
+        httpOnly: true, // accessible only by a web server
+        sameSite: "None", // cross site cookie
+        secure: true,
+        maxAge: 24 * 60 * 60 * 1000,
+        });
+
+    // send the accessToken containing the user's details
+    // remember to only store it in state on the Frontend
+    res.json({ accessToken });
+}
+```
+
+The code block above generates access and refresh tokens for an authenticated user named `authenticatedUser`, authenticated via username and password.
+
+Here's what's happening:
+
+- `sign()` is a built-in method from the `jsonwebtoken` package.
+- Payload: Contains information about the authenticated user. It includes **UserInfo** for the access token and just the **username** for the refresh token. You can add more data like roles to the **UserInfo** object.
+- Secret key: The tokens are signed with secret keys `process.env.ACCESS_TOKEN_SECRET` and `process.env.REFRESH_TOKEN_SECRET`. This ensures that when the user presents the tokens in subsequent requests, the server can verify their authenticity by checking the signature against the secret key stored in the `.env` file.
+- Options: Specifies the expiration period of the generated tokens.
+- The refresh token is sent as an HttpOnly secure cookie.
+- The access token is sent as JSON.
+
+### Verifying Access Token
+
+Now that we've generated and assigned tokens to authenticated users, we need to ensure that only users with valid JWTs in their request headers can access protected resources.
+
+This can be achieved with a middleware function that verifies the validity of tokens and returns an error if they are invalid. Let's create a middleware named **verifyJWT** and use it across your project.
+
+```JavaScript
+const jwt = require("jsonwebtoken");
+
+const verifyJWT = (req, res, next) => {
+  const authHeader = req.headers.authorization || req.headers.Authorization;
+  if (!authHeader?.startsWith("Bearer")) {
+    return res.status(401).json({ message: "You are unauthorized" });
+  }
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) return res.sendStatus(403);
+    req.username = decoded.UserInfo.username;
+    next();
+  });
+};
+
+module.exports = verifyJWT;
+```
+
+**What happens in the function**:
+
+- We check for the presence of Authorization data in the request headers.
+- We confirm that Authorization starts with **Bearer**, as per standard practice.
+- We extract the token from the Authorization header.
+- We verify the token's validity.
+- If the token is valid, we allow the user access.
+- `next()` is then called to pass control to the next middleware function (if one exists).
+
+Example usage: In your `server.js` file:
+
+```JavaScript
+const express = require("express");
+const app = express();
+const verifyJWT = require("./middleware/verifyJWT"); // or any path you placed the file
+
+app.use(verifyJWT);
+// below it shoud be every route you want protected by JWT
+```
+
+### New Access Token with Refresh Token
+
+This function generates a new access token when a user requests it with a valid refresh token. It should be integrated into the refresh endpoint of your project.
+
+```JavaScript
+const handleRefreshToken = async (req, res) => {
+  const cookies = req?.cookies; // the httpOnly cookies would be sent along the request
+  if (!cookies?.jwt) return res.status(401).json({ message: "Unauthorized" });
+
+  const refreshToken = cookies.jwt; // we saved the cookie as 'jwt' at handleLogin
+
+  // Verify the refreshToken
+  jwt.verify(
+    refreshToken,
+    process.env.REFRESH_TOKEN_SECRET,
+    async (err, decoded) => {
+      if (err) return res.status(403).json({ message: "Forbidden" });
+
+      // Use this to confirm the user if you are using MongoDb and Mongoose as your database
+      // If not, run your code to authenticate the user
+      const authenticatedUser = await User.findOne({ username: decoded.username }).exec();
+
+      if (!authenticatedUser) return res.status(401).json({ message: "Unauthorized" });
+
+      // Creating the new access token
+      const accessToken = jwt.sign(
+        {
+          "UserInfo": {
+            "username": authenticatedUser.username,
+          },
+        },
+        process.env.ACCESS_TOKEN_SECRET,
+        { expiresIn: "15m" }
+      );
+      res.json({ accessToken });
+    }
+  );
+};
+```
+
+**What happens in the function**:
+
+- We extract the cookie stored as **jwt** from the request body, which represents our refreshToken. Remember, we stored it as such in the `handleLogin` function.
+- We verify that the token is valid.
+- We authenticate the user associated with that token beacuse it's possible that the user might have been deleted from the database.
+- We create and respond with the new access token.
+
+Now users can stay logged in.
+
+##### Closing
+
+In conclusion, incorporating JWTs into Express.js strengthens authentication, enabling secure access and continuous user sessions. By following these steps, developers can bolster the security and efficiency of their web applications, ensuring seamless user experiences and safeguarding sensitive data.
+
+That concludes this post. Thank you for reading, and happy coding!

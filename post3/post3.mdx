@@ -25,6 +25,7 @@ Granting extended periods of access to resources poses a significant security ri
 With these potential imminent threats, every moment of unauthorized access to resources poses a significant risk, potentially resulting in substantial financial implications and damage to the public image of the organization.
 
 **The Way Forward**
+
 This is where JWT (JSON Web Token) **access** and **refresh** tokens come into play. They are secure tokens used as an additional security layer to regulate users' access to resources.
 
 <CustomImage
@@ -33,17 +34,20 @@ This is where JWT (JSON Web Token) **access** and **refresh** tokens come into p
 />
 
 **Access Token**
+
 The access token is issued immediately upon authentication (when the user logs in with their username and password). As the name suggests, it allows access to resources for authenticated users. A valid access token grants access, while an invalid access token results in access being denied. This ensures that users must log in again upon the expiration of this token.
 
 Access tokens usually expire within a short period, typically **5 minutes** or less in production, and mere seconds for financial applications.
 
 **Refresh Token**
+
 We've discussed the access token, but except in financial or high-security risk applications, it would be a poor user experience if users had to log in every 5 minutes.
 This is where the refresh token shines. It is also issued upon authentication alongside the access token. A valid refresh token is used to obtain a new access token upon expiration of the current access token. This process ensures that users remain logged in as long as they have a valid refresh token.
 
 The refresh token has a longer expiration period than the access token, typically **7 days** or more depending on preference.
 
 **Are these tokens secure?**
+
 This is an intriguing question because while the aim of JWT tokens is to add an extra layer of security, depending on how they are utilized, they can still pose a serious security risk.
 
 - User data, company data, and any other sensitive information can be accessed if an access token is exposed.
@@ -53,3 +57,5 @@ This is an intriguing question because while the aim of JWT tokens is to add an 
 
 - Access tokens should never be stored in localStorage, as they can be easily retrieved from there. Instead, store them in JavaScript state.
 - Refresh tokens should be stored as **httpOnly** secure **cookies**, ensuring they can only be accessed over secured HTTP requests.
+
+That concludes this post. Thank you for reading, and happy coding!
