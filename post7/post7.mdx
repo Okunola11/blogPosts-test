@@ -1,0 +1,115 @@
+---
+title: "JWT in Django Rest Framework"
+date: "2024-04-29"
+tags: ["jwt", "django", "python"]
+intro: "Walk through implementing JWT in a Django rest framework project with me in this post"
+---
+
+In my previous post, I discussed implementing **JWT** tokens in an Express.js project. This post will guide you through the process of implementing JWT tokens in a Python Django project.
+
+To follow along with this tutorial, it's assumed that you are already working on an API with Django Rest Framework and are interested in integrating JWT tokens into your authentication process.
+
+We will be using `simple jwt`, a JSON Web Token authentication plugin for the Django REST Framework.
+
+## Installation
+
+Activate your virtual environment or skip this if you are not using one in your project. Replace **venv** with the name of your virtual environment file. Then run:
+
+```python
+# For Windows
+source venv/Scripts/activate
+
+# For Mac
+source venv/bin/activate
+```
+
+Begin by adding `djangorestframework` and `djangorestframework-simplejwt` to your **requirements.txt** file if you have:
+
+```python
+#Run
+pip install requirements.txt -r
+```
+
+If you do not have the **requirements.txt** file, run:
+
+```python
+pip install djangorestframework-simplejwt
+pip install djangorestframework
+```
+
+Navigate to your `settings.py` and inform django of these new additions to your project by adding **rest_framework_simplejwt** to _INSTALLED_APPS_
+
+```python
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    #other apps
+    'rest_framework', # add this
+    'rest_framework_simplejwt', # add this
+]
+```
+
+Create a new **api** app in your project if you do not have one already. This app will handle all authentication processes and paths. To create it, run the following command:
+
+```python
+python manage.py startapp api
+```
+
+In the api app, navigate to the _urls.py_ file, add the following
+
+```python
+from django.urls import path
+from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView, TokenVerifyView)
+
+urlpatterns = [
+    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/verify/', TokenVerifyView.as_view(), name='token_verify'),
+]
+```
+
+By completing these steps, we will have the following endpoints available:
+
+- The `token/` endpoint, which provides access and refresh tokens upon user authentication.
+- The `token/refresh/` endpoint, used to refresh expired access tokens.
+- The `token/verify/` endpoint, which validates tokens.
+
+### Tokens expiration
+
+To set an expiration time for the token, navigate to the `settings.py` file and add the following configuration:
+
+```python
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=5), # set to preference
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1), # set to preference
+    # Check the documentation for other settings
+}
+```
+
+### usage
+
+To apply this authentication to a particular view in any app within your project, navigate to the `views.py` file of that app and add the authentication class to the desired view.
+
+```python
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+# Apply this to the view
+authentication_class = [JWTAuthentication]
+```
+
+To require authentication globally, navigate to your `settings.py` file. If the **REST_FRAMEWORK** dictionary does not exist, create it. Then, add the following configuration:
+
+```python
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+        ],
+}
+```
+
+You can now enforce authentication for access to specific views or globally across your entire project.
+
+##### Closing
+
+In conclusion, integrating JWTs into a Django project is remarkably straightforward and efficient compared to working with Nest.js or Express.js. Thanks to the pre-written logic, we simply import them as modules, which is quite convenient. It almost feels like a ridiculous shortcut! 😅 I'm grateful for having started by manually writing those logics in Express and Nest.js.
+
+That concludes this post. Thank you for reading, and happy coding!
