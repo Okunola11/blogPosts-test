@@ -23,7 +23,7 @@ source venv/Scripts/activate
 source venv/bin/activate
 ```
 
-Begin by adding `djangorestframework` and `djangorestframework-simplejwt` to your **requirements.txt** file if you have:
+Begin by adding `djangorestframework` and `djangorestframework-simplejwt` to your **requirements.txt** file if you have. Then run:
 
 ```python
 #Run
@@ -54,7 +54,7 @@ Create a new **api** app in your project if you do not have one already. This ap
 python manage.py startapp api
 ```
 
-In the api app, navigate to the _urls.py_ file, add the following
+In the api app, navigate to the `urls.py` file, add the following:
 
 ```python
 from django.urls import path
@@ -96,7 +96,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 authentication_class = [JWTAuthentication]
 ```
 
-To require authentication globally, navigate to your `settings.py` file. If the **REST_FRAMEWORK** dictionary does not exist, create it. Then, add the following configuration:
+To require authentication globally, navigate to your `settings.py` file. If the **_REST_FRAMEWORK_** dictionary does not exist, create it. Then, add the following configuration:
 
 ```python
 REST_FRAMEWORK = {
