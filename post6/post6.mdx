@@ -10,11 +10,14 @@ intro: "Static Generation is recommended whenever possible for faster load time"
 We recommend using **Static Generation** (with and without data) whenever possible because your page can be built once and served by CDN, which makes it much faster than having a server render the page on every request.
 
 ```ts
-const sum = (num1: number, num2: number): number => {
-  return num1 + num2;
-};
+export async function getStaticParams() {
+  const slugs = ["post-1", "post-2", "post-3"];
 
-console.log(sum(4, 8)); //12
+  return {
+    paths: slugs.map((slug) => ({ params: { slug } })),
+    fallback: false, // Set to true for dynamic slugs not defined in paths
+  };
+}
 ```
 
 You can use Static Generation for many types of pages, including:
