@@ -1,6 +1,6 @@
 ---
 title: "Retrieving the Most Frequently Occurring Values from a List of Any Data Types"
-date: "2024-04-19"
+date: "2024-05-24"
 tags: ["tags", "function"]
 intro: "Discover how to efficiently extract the most common elements from diverse datasets, regardless of data type using TypeScript. Learn practical methods now!"
 ---
@@ -40,7 +40,7 @@ Several key operations are involved in this function.
 
 The function is of generic type `T`, ensuring its compatibility with any data type. It accepts two parameters:
 
-- `arr: T[]`: An array of generic type `T`.
+- `arr: T[ ]`: An array of generic type `T`.
 - `count`: A number determining the length of the list returned by the function.
 
 The operations of the function are elaborated below:
@@ -48,16 +48,16 @@ The operations of the function are elaborated below:
 - Occurrences Object: This object stores the count of each unique value in the array.
 - Counting Occurrences:
   - Utilizing **forEach**, the function iterates through each value of the input array (`arr`).
-  - For each iterated value, the function converts it to a string using `JSON.stringify()` to create a key for the occurrences object.
+  - For each iterated value, the function converts it to a string using `JSON.stringify( )` to create a key for the occurrences object.
   - Subsequently, the function increments the count for that value in the occurrences object.
-  - At this stage, we have an occurrences object with unique stringified **values**, each representing a unique value from the input array (`arr: T[]`), and the corresponding **counts**, indicating the number of times that value exists in the array, serving as the **value** of the key.
+  - At this stage, we have an occurrences object with unique stringified **values**, each representing a unique value from the input array (`arr: T[ ]`), and the corresponding **counts**, indicating the number of times that value exists in the array, serving as the **value** of the key.
 - Sorting Values by Occurrence:
-  - The function first extracts the keys from the occurrences object using `Object.keys()`.
-  - It then sorts these keys based on the occurrence count of each value in descending order using the `sort()` function.
-  - The `sort()` function employs a comparison function that subtracts the occurrence counts (`occurrences[b] - occurrences[a]`) to sort the keys accordingly.
+  - The function first extracts the keys from the occurrences object using `Object.keys( )`.
+  - It then sorts these keys based on the occurrence count of each value in descending order using the `sort( )` function.
+  - The `sort( )` function employs a comparison function that subtracts the occurrence counts (`occurrences[b] - occurrences[a]`) to sort the keys accordingly.
 - Mapping and Slicing:
 
-  - Next, the function maps the sorted keys back to their original values using `JSON.parse()` and casts them back to type `T`, which represents the data type of the values before they were stringified.
+  - Next, the function maps the sorted keys back to their original values using `JSON.parse( )` and casts them back to type `T`, which represents the data type of the values before they were stringified.
   - Finally, the function returns the top `count` values from the sorted array, based on the **count** parameter passed into the function.
 
   **Usage**
@@ -95,7 +95,7 @@ This provides a new list of the 3 most occuring values from `randomArray`
 
 ```TypeScript
 {dele: "aaa"},
-// shows as
+// renders as
 [Object Object]
 //I had to stringify it as objects are not valied react children. The same object passed in will get returned by the function.
 ```
